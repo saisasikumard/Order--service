@@ -1,6 +1,7 @@
 package com.obito.Order_service.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.obito.Order_service.dto.OrderResponseDto;
 import com.obito.Order_service.entity.Order;
 import com.obito.Order_service.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ public class OrderController {
         return orderService.placeOrder(order);
     }
     @GetMapping("/{orderId}")
-    public String get(@PathVariable("orderId") String orderId){
+    public OrderResponseDto get(@PathVariable("orderId") String orderId){
         return orderService.getOrder(orderId);
     }
 }

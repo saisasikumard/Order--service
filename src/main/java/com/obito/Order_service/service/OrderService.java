@@ -2,6 +2,9 @@ package com.obito.Order_service.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.obito.Order_service.dto.OrderResponseDto;
+import com.obito.Order_service.dto.PaymentDto;
+import com.obito.Order_service.dto.UserDto;
 import com.obito.Order_service.entity.Order;
 import com.obito.Order_service.repository.OrderRepository;
 import lombok.AccessLevel;
@@ -12,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
 import java.util.UUID;
@@ -27,6 +31,9 @@ public class OrderService {
     @Autowired
     KafkaTemplate<String,Object> kafkaTemplate;
 
+    @Autowired
+    RestTemplate restTemplate;
+
     public String placeOrder(@RequestBody Order  order) throws JsonProcessingException {
         //save in DB
         order.setPurchaseDate(new Date());
@@ -37,8 +44,19 @@ public class OrderService {
         return "Order placed Succefully with OrderId:"+order.getOrderId()+"..we will notify about your Confirmation....";
     }
 
-    public String getOrder(String orderId){
-        return null;
+    public OrderResponseDto getOrder(String orderId){
+        //order Details from own DB
+        Order order=orderRepository.findByOrderId(orderId);
+        //Payment details from rest call from payment service
+        PaymentDto paymentDto=restTemplate.getForObject("http://localhost:7073/payment/get/"+orderId, PaymentDto.class);
+
+        //User details from rest call from user service
+        UserDto userDto=restTemplate.getForObject("http://localhost:7071/user/get?id="+order.getUserId(), UserDto.class);
+        OrderResponseDto orderResponseDto=new OrderResponseDto();
+        orderResponseDto.setOrder(order);
+        orderResponseDto.setPaymentDto(paymentDto);
+        orderResponseDto.setUserDto(userDto);
+        return orderResponseDto;
     }
 
 }
