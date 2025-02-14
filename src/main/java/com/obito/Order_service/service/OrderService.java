@@ -46,12 +46,13 @@ public class OrderService {
 
     public OrderResponseDto getOrder(String orderId){
         //order Details from own DB
+        orderRepository.findById(5);
         Order order=orderRepository.findByOrderId(orderId);
         //Payment details from rest call from payment service
-        PaymentDto paymentDto=restTemplate.getForObject("http://localhost:7073/payment/get/"+orderId, PaymentDto.class);
+        PaymentDto paymentDto=restTemplate.getForObject("http://PAYMENT-SERVICE/payment/get/"+orderId, PaymentDto.class);
 
         //User details from rest call from user service
-        UserDto userDto=restTemplate.getForObject("http://localhost:7071/user/get?id="+order.getUserId(), UserDto.class);
+        UserDto userDto=restTemplate.getForObject("http://USER-SERVICE/user/get?id="+order.getUserId(), UserDto.class);
         OrderResponseDto orderResponseDto=new OrderResponseDto();
         orderResponseDto.setOrder(order);
         orderResponseDto.setPaymentDto(paymentDto);
