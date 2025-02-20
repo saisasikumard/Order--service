@@ -15,6 +15,9 @@ import java.util.Date;
 public class PaymentDto {
     int id;
     String paymode;
+    double amount;
+    Date paidDate;
+    String paymentStatus;
 
     public int getId() {
         return id;
@@ -56,7 +59,5 @@ public class PaymentDto {
         this.paymode = paymode;
     }
 
-    double amount;
-    Date paidDate;
-    String paymentStatus;
+
 }

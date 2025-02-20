@@ -10,6 +10,7 @@ import com.obito.Order_service.repository.OrderRepository;
 import lombok.AccessLevel;
 
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -22,6 +23,7 @@ import java.util.UUID;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE)
+
 public class OrderService {
     @Autowired
     OrderRepository orderRepository;
@@ -34,13 +36,15 @@ public class OrderService {
     @Autowired
     RestTemplate restTemplate;
 
-    public String placeOrder(@RequestBody Order  order) throws JsonProcessingException {
+    public String placeOrder( Order  order) throws JsonProcessingException {
         //save in DB
         order.setPurchaseDate(new Date());
         order.setOrderId(UUID.randomUUID().toString().split("-")[0]);
         orderRepository.save(order);
+        String value=new ObjectMapper().writeValueAsString(order);
         //send to payment service through kafka
-        kafkaTemplate.send(topicName,new ObjectMapper().writeValueAsString(order));
+        restTemplate.postForObject("http://PAYMENT-SERVICE/payment/process",order,String.class);
+      //  kafkaTemplate.send("ORDER_PAYMENT_TOPIC1",new ObjectMapper().writeValueAsString(order));
         return "Order placed Succefully with OrderId:"+order.getOrderId()+"..we will notify about your Confirmation....";
     }
 
@@ -49,8 +53,9 @@ public class OrderService {
         orderRepository.findById(5);
         Order order=orderRepository.findByOrderId(orderId);
         //Payment details from rest call from payment service
-        PaymentDto paymentDto=restTemplate.getForObject("http://PAYMENT-SERVICE/payment/get/"+orderId, PaymentDto.class);
-
+        PaymentDto paymentDto=new PaymentDto();
+        paymentDto= restTemplate.getForObject("http://PAYMENT-SERVICE/payment/get/"+orderId, PaymentDto.class);
+        //System.out.println(paymentDto.toString());
         //User details from rest call from user service
         UserDto userDto=restTemplate.getForObject("http://USER-SERVICE/user/get?id="+order.getUserId(), UserDto.class);
         OrderResponseDto orderResponseDto=new OrderResponseDto();
