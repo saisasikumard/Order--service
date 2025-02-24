@@ -36,6 +36,15 @@ public class OrderResponseDto {
         this.order = order;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    String message;
     Order order;
     PaymentDto paymentDto;
     UserDto userDto;
